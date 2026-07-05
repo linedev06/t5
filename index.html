@@ -1,0 +1,1861 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quita AI — Análise Jurídica de Multas de Trânsito</title>
+<meta name="description" content="Envie sua multa, receba uma análise jurídica detalhada e saiba se vale recorrer.">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --purple:#7C3AED;
+  --purple-deep:#6D28D9;
+  --purple-light:#F5F3FF;
+  --purple-mist:#EDE9FE;
+  --purple-ghost:rgba(124,58,237,.06);
+  --text:#1E1B2E;
+  --text-sec:#6B7280;
+  --text-dim:#9CA3AF;
+  --border:#E5E7EB;
+  --white:#FFFFFF;
+  --dark:#0F0D1A;
+}
+html{scroll-behavior:auto}
+body{
+  font-family:'Inter',sans-serif;
+  color:var(--text);
+  background:var(--white);
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+.eyebrow{
+  font-family:'Montserrat',sans-serif;
+  font-weight:400;font-size:10px;
+  letter-spacing:2.5px;text-transform:uppercase;
+  color:var(--purple);
+  display:flex;align-items:center;gap:12px;
+}
+.eyebrow::before{content:'';width:24px;height:1px;background:var(--purple)}
+.section-title{
+  font-family:'Montserrat',sans-serif;
+  font-weight:400;font-size:clamp(22px,3vw,32px);
+  letter-spacing:-0.3px;line-height:1.25;
+  margin:14px 0 0;
+}
+.section-sub{
+  font-size:15px;color:var(--text-sec);
+  line-height:1.75;font-weight:300;
+  margin-top:14px;max-width:520px;
+}
+
+/* ═══ LOGO (marca QUITAAI: semáforo + letras) ═══ */
+.logo-mark{
+  display:flex;
+  align-items:center;
+  text-decoration:none;
+  gap:0;
+}
+.logo-icon{
+  width:29px;
+  height:44px;
+  flex-shrink:0;
+}
+.logo-icon svg{width:100%;height:100%;overflow:visible;display:block}
+.logo-letters{
+  display:flex;
+  align-items:center;
+  height:22px;
+  margin-left:-2px;
+}
+.logo-letters svg{height:100%;width:auto;display:block;overflow:visible}
+.logo-letter-dark{stroke:var(--text);transition:stroke .35s}
+.logo-letter-accent{stroke:var(--purple)}
+
+/* Rodapé: versão compacta e discreta, sem link */
+.footer-mark .logo-icon{width:15px;height:23px}
+.footer-mark .logo-letters{height:17px}
+.footer-mark .logo-letter-dark{stroke:var(--text-dim)}
+
+/* Nav com menu fullscreen aberto: parte escura da logo vira branca */
+body.menu-open .nav-logo .logo-letter-dark{stroke:var(--white)}
+
+/* ═══ INTRO / ABERTURA ═══ */
+#introOverlay{
+  position:fixed;inset:0;z-index:9999;
+  background:var(--white);
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+}
+#introPanel{
+  position:fixed;inset:0;z-index:9998;
+  background:var(--white);
+}
+.intro-logo{display:flex;align-items:center}
+.intro-logo .logo-icon{width:56px;height:86px}
+.intro-logo .logo-letters{height:44px;margin-left:-4px}
+
+/* ═══ NAV ═══ */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  background:transparent;
+  backdrop-filter:none;-webkit-backdrop-filter:none;
+  border-bottom:1px solid transparent;
+  transition:background .4s ease, backdrop-filter .4s ease, border-color .4s ease, box-shadow .3s ease;
+}
+nav.scrolled{
+  background:rgba(255,255,255,.92);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border);
+  box-shadow:0 1px 24px rgba(0,0,0,.04);
+}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:68px}
+.nav-logo{
+  z-index:201;
+}
+.nav-links{display:flex;align-items:center;gap:32px}
+.nav-links a{font-size:13px;color:rgba(255,255,255,.75);text-decoration:none;transition:color .3s}
+.nav-links a:hover{color:var(--white)}
+nav.scrolled .nav-links a{color:var(--text-sec)}
+nav.scrolled .nav-links a:hover{color:var(--text)}
+nav:not(.scrolled) .nav-logo .logo-letter-dark{stroke:var(--white)}
+nav:not(.scrolled) .hamburger .line{background:var(--white)}
+.nav-cta{
+  color:#FFFFFF !important;
+  font-family:'Montserrat',sans-serif;font-weight:400;
+  font-size:11px;letter-spacing:1.5px;text-transform:uppercase;
+  padding:10px 20px;background:var(--purple);color:var(--white);
+  border:none;border-radius:8px;text-decoration:none;transition:opacity .2s;
+}
+.nav-cta:hover{opacity:.88}
+
+/* Hamburger */
+.hamburger{
+  display:none;z-index:201;
+  background:none;border:none;cursor:pointer;
+  width:40px;height:40px;position:relative;flex-shrink:0;
+}
+.hamburger .line{
+  display:block;width:20px;height:1.5px;
+  background:var(--text);position:absolute;left:10px;
+  transition:all .35s cubic-bezier(.4,0,.2,1);
+}
+.hamburger .line:nth-child(1){top:14px}
+.hamburger .line:nth-child(2){top:20px}
+.hamburger .line:nth-child(3){top:26px}
+.hamburger.open .line:nth-child(1){top:20px;transform:rotate(45deg);background:var(--white)}
+.hamburger.open .line:nth-child(2){opacity:0;transform:translateX(8px)}
+.hamburger.open .line:nth-child(3){top:20px;transform:rotate(-45deg);background:var(--white)}
+
+/* Fullscreen menu */
+.fullscreen-menu{
+  position:fixed;inset:0;z-index:200;
+  background:var(--dark);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;
+  transition:opacity .4s cubic-bezier(.4,0,.2,1);
+}
+.fullscreen-menu.open{opacity:1;pointer-events:auto}
+.fullscreen-menu a{
+  font-family:'Montserrat',sans-serif;
+  font-weight:300;font-size:28px;
+  letter-spacing:4px;text-transform:uppercase;
+  color:rgba(255,255,255,.35);text-decoration:none;
+  padding:18px 0;transition:all .3s;position:relative;
+}
+.fullscreen-menu a:hover{color:var(--white)}
+.fullscreen-menu a::after{
+  content:'';position:absolute;bottom:14px;left:0;
+  width:0;height:1px;background:var(--purple);transition:width .3s;
+}
+.fullscreen-menu a:hover::after{width:100%}
+.fullscreen-menu .menu-cta{
+  margin-top:40px;font-size:13px;letter-spacing:2px;
+  padding:16px 40px;border:1px solid var(--purple);
+  border-radius:10px;color:var(--purple);transition:all .3s;
+}
+.fullscreen-menu .menu-cta:hover{background:var(--purple);color:var(--white)}
+.fullscreen-menu .menu-cta::after{display:none}
+
+/* ═══ ABERTURA CINEMATOGRÁFICA (cine-hero) ═══ */
+.cine-hero{
+  position:relative;
+  height:calc(1500px + 100vh);
+  background:var(--dark);
+}
+.cine-sticky{
+  position:sticky;top:0;
+  height:100vh;width:100%;
+  overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--dark);
+}
+.cine-image{
+  position:absolute;inset:0;z-index:0;
+  overflow:hidden;
+  pointer-events:none;
+}
+#fluidCanvas{
+  position:absolute;inset:0;z-index:1;
+  width:100%;height:100%;display:block;
+}
+#phoneCanvas{
+  position:absolute;inset:0;z-index:2;
+  width:100%;height:100%;display:block;
+  pointer-events:none;
+}
+.cine-image::after{
+  content:'';position:absolute;inset:0;z-index:3;
+  background:linear-gradient(180deg,rgba(15,13,26,.1),rgba(15,13,26,.5) 82%);
+  pointer-events:none;
+}
+.cine-headline{
+  position:absolute;z-index:4;
+  text-align:center;color:var(--white);
+  opacity:0;transform:translateY(28px);
+  max-width:560px;padding:0 24px;
+  pointer-events:none;
+}
+.cine-headline.is-visible{pointer-events:auto}
+.cine-headline .eyebrow{justify-content:center;color:#C4B5FD}
+.cine-headline .eyebrow::before{background:#C4B5FD}
+.cine-headline h1{
+  font-family:'Montserrat',sans-serif;font-weight:400;
+  font-size:clamp(28px,4.4vw,46px);letter-spacing:-0.5px;
+  line-height:1.18;margin:20px 0 16px;color:var(--white);
+}
+.cine-headline h1 em{font-style:normal;color:#C4B5FD}
+.cine-headline p{
+  font-size:15px;line-height:1.75;font-weight:300;
+  color:rgba(255,255,255,.62);margin:0 auto 8px;max-width:420px;
+}
+.cine-scroll-cue{
+  position:absolute;left:50%;bottom:36px;z-index:4;
+  transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  color:rgba(255,255,255,.55);
+  font-family:'Montserrat',sans-serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;
+}
+.cine-scroll-cue .cue-line{width:1px;height:28px;background:rgba(255,255,255,.3);position:relative;overflow:hidden}
+.cine-scroll-cue .cue-line::after{
+  content:'';position:absolute;top:-100%;left:0;width:100%;height:100%;
+  background:var(--white);animation:cueDrop 1.6s ease-in-out infinite;
+}
+@keyframes cueDrop{0%{top:-100%}70%{top:100%}100%{top:100%}}
+
+/* ═══ HERO ═══ */
+.hero{
+  position:relative;z-index:1;
+  background:var(--white);
+  margin-top:-100vh;
+  transform:translateY(100%);
+  will-change:transform;
+  border-radius:32px 32px 0 0;
+  box-shadow:0 -40px 60px rgba(0,0,0,.18);
+  padding:140px 0 80px;min-height:100vh;display:flex;align-items:center;
+}
+.hero .wrap{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+.hero-content{max-width:480px}
+.hero h1{
+  font-family:'Montserrat',sans-serif;font-weight:400;
+  font-size:clamp(28px,4vw,44px);letter-spacing:-0.5px;
+  line-height:1.18;margin:20px 0;
+}
+.hero h1 em{font-style:normal;color:var(--purple)}
+.hero-sub{
+  font-size:16px;line-height:1.75;color:var(--text-sec);
+  font-weight:300;margin-bottom:40px;max-width:400px;
+}
+.hero-actions{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.btn-main{
+  font-family:'Montserrat',sans-serif;font-weight:400;
+  font-size:12px;letter-spacing:2px;text-transform:uppercase;
+  padding:16px 32px;background:var(--purple);color:var(--white);
+  border:none;border-radius:10px;cursor:pointer;text-decoration:none;
+  display:inline-flex;align-items:center;gap:10px;transition:all .2s;
+}
+.btn-main:hover{background:var(--purple-deep)}
+.btn-ghost{
+  font-size:13px;color:var(--text-sec);text-decoration:none;
+  display:inline-flex;align-items:center;gap:6px;transition:color .2s;
+}
+.btn-ghost:hover{color:var(--purple)}
+.hero-visual{position:relative;display:flex;justify-content:center}
+.hero-device{
+  width:280px;background:var(--white);
+  border:1px solid var(--border);border-radius:20px;padding:16px;
+  box-shadow:0 32px 80px rgba(124,58,237,.08),0 2px 8px rgba(0,0,0,.03);
+  transform:perspective(800px) rotateY(-4deg) rotateX(2deg);
+  transition:transform .5s cubic-bezier(.4,0,.2,1);
+}
+.hero-device:hover{transform:perspective(800px) rotateY(0) rotateX(0)}
+.device-bar{display:flex;gap:5px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.device-dot{width:5px;height:5px;border-radius:50%;background:var(--border)}
+.device-dot.on{background:var(--purple)}
+.device-upload-area{
+  border:1.5px dashed var(--border);border-radius:10px;
+  padding:28px 16px;display:flex;flex-direction:column;
+  align-items:center;gap:6px;margin-bottom:12px;
+}
+.device-upload-area svg{color:var(--purple);opacity:.5}
+.device-upload-area span{font-size:10px;color:var(--text-dim)}
+.device-action{
+  width:100%;padding:10px;background:var(--purple);color:var(--white);
+  border:none;border-radius:8px;font-family:'Montserrat',sans-serif;
+  font-size:8px;letter-spacing:1.5px;text-transform:uppercase;
+}
+.hero-badge{
+  position:absolute;background:var(--white);
+  border:1px solid var(--border);border-radius:10px;
+  padding:12px 16px;box-shadow:0 8px 28px rgba(0,0,0,.05);
+  display:flex;align-items:center;gap:10px;
+  animation:drift 5s ease-in-out infinite;
+}
+.hero-badge.a{top:16px;right:-44px}
+.hero-badge.b{bottom:36px;left:-52px;animation-delay:2.5s}
+@keyframes drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.badge-dot{
+  width:32px;height:32px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.badge-dot.purple{background:var(--purple-light);color:var(--purple)}
+.badge-dot.green{background:rgba(16,185,129,.1);color:#10B981}
+.badge-info small{font-size:9px;color:var(--text-dim);font-family:'Montserrat',sans-serif;letter-spacing:1px;text-transform:uppercase;display:block}
+.badge-info strong{font-size:13px;font-weight:500;display:block;margin-top:1px}
+
+/* ═══ STAT BAR ═══ */
+.stat-bar{border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:44px 0}
+.stat-bar .wrap{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;text-align:center}
+.stat-num{
+  font-family:'Montserrat',sans-serif;font-weight:300;
+  font-size:32px;color:var(--text);line-height:1;margin-bottom:6px;
+}
+.stat-num span{color:var(--purple);font-size:20px}
+.stat-desc{font-size:12px;color:var(--text-sec);line-height:1.5}
+
+/* ═══ REASONS ═══ */
+.reasons{padding:120px 0}
+.reasons .wrap{max-width:860px}
+.reasons-header{margin-bottom:72px}
+.reason{
+  display:grid;grid-template-columns:72px 1fr;gap:0;
+  padding:48px 0;border-top:1px solid var(--border);position:relative;
+}
+.reason:last-child{border-bottom:1px solid var(--border)}
+.reason-number{
+  font-family:'Montserrat',sans-serif;font-weight:300;
+  font-size:48px;color:var(--purple-mist);line-height:1;padding-top:2px;
+}
+.reason-title{
+  font-family:'Montserrat',sans-serif;font-weight:400;
+  font-size:18px;letter-spacing:-0.2px;line-height:1.3;margin-bottom:12px;
+}
+.reason-text{font-size:15px;color:var(--text-sec);line-height:1.8;font-weight:300;max-width:540px}
+.reason-accent{
+  position:absolute;left:0;top:48px;width:3px;height:0;
+  background:var(--purple);border-radius:2px;
+  transition:height .5s cubic-bezier(.4,0,.2,1);
+}
+.reason.in-view .reason-accent{height:48px}
+
+/* ═══ PROCESS — GSAP pinned ═══ */
+.process{background:var(--purple-ghost);overflow:hidden}
+.process-pin{
+  min-height:100vh;
+  display:flex;align-items:center;justify-content:center;
+  position:relative;
+}
+.process-inner{
+  width:100%;max-width:960px;
+  padding:0 24px;
+  margin:0 auto;
+}
+.process-header{text-align:center;margin-bottom:72px}
+.process-header .section-sub{margin-left:auto;margin-right:auto}
+.process-header .eyebrow{justify-content:center}
+
+/* Desktop timeline */
+.process-timeline{
+  display:grid;grid-template-columns:1fr 1fr 1fr;
+  position:relative;padding-top:24px;
+}
+.process-line-track{
+  position:absolute;top:44px;
+  left:calc(100%/6);right:calc(100%/6);
+  height:1px;background:var(--border);
+}
+.process-line-fill{
+  position:absolute;top:0;left:0;
+  height:100%;width:0;
+  background:var(--purple);
+}
+.process-step{
+  text-align:center;padding:0 20px;
+  opacity:0;transform:translateY(32px);
+}
+.step-marker{
+  width:44px;height:44px;border-radius:50%;
+  border:1.5px solid var(--border);background:var(--white);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 24px;position:relative;z-index:2;
+  transition:border-color .4s, box-shadow .4s;
+}
+.step-marker.active{
+  border-color:var(--purple);
+  box-shadow:0 0 0 8px var(--purple-light);
+}
+.step-num{
+  font-family:'Montserrat',sans-serif;font-weight:400;
+  font-size:14px;color:var(--text-dim);transition:color .4s;
+}
+.step-marker.active .step-num{color:var(--purple)}
+.step-title{
+  font-family:'Montserrat',sans-serif;font-weight:400;
+  font-size:13px;letter-spacing:1.5px;text-transform:uppercase;
+  margin-bottom:10px;
+}
+.step-text{font-size:14px;color:var(--text-sec);line-height:1.65;font-weight:300}
+
+/* ═══ CHECKS ═══ */
+.checks{padding:120px 0}
+.checks .wrap{max-width:900px}
+.checks-header{margin-bottom:64px}
+.checks-items{
+  display:grid;grid-template-columns:1fr 1fr;gap:0;
+  border-top:1px solid var(--border);
+}
+.check-item{
+  padding:36px 32px 36px 0;border-bottom:1px solid var(--border);
+  display:flex;gap:20px;align-items:flex-start;
+}
+.check-item:nth-child(odd){padding-right:40px;border-right:1px solid var(--border)}
+.check-item:nth-child(even){padding-left:40px;padding-right:0}
+.check-num{
+  font-family:'Montserrat',sans-serif;font-weight:300;
+  font-size:28px;color:var(--purple-mist);line-height:1;
+  flex-shrink:0;min-width:36px;padding-top:2px;
+}
+.check-title{
+  font-family:'Montserrat',sans-serif;font-weight:400;
+  font-size:14px;letter-spacing:.5px;margin-bottom:6px;
+}
+.check-text{font-size:13px;color:var(--text-sec);line-height:1.65;font-weight:300}
+
+/* ═══ PRICING ═══ */
+.pricing{padding:120px 0;background:var(--purple-ghost)}
+.pricing .wrap{max-width:520px;text-align:center}
+.pricing-header{margin-bottom:48px}
+.pricing-header .section-sub{margin-left:auto;margin-right:auto}
+.pricing-header .eyebrow{justify-content:center}
+.pricing-box{
+  background:var(--white);border:1px solid var(--border);
+  border-radius:16px;padding:40px 36px;text-align:left;
+}
+.pricing-top{
+  display:flex;justify-content:space-between;align-items:flex-start;
+  padding-bottom:24px;margin-bottom:24px;border-bottom:1px solid var(--border);
+}
+.pricing-plan{
+  font-family:'Montserrat',sans-serif;font-weight:400;
+  font-size:13px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px;
+}
+.pricing-plan-sub{font-size:12px;color:var(--text-sec);font-weight:300}
+.pricing-amount{
+  font-family:'Montserrat',sans-serif;font-weight:300;
+  font-size:36px;color:var(--purple);line-height:1;text-align:right;
+}
+.pricing-amount small{font-size:16px}
+.pricing-amount-sub{font-size:11px;color:var(--text-dim);text-align:right;margin-top:4px}
+.pricing-list{list-style:none;display:flex;flex-direction:column;gap:14px;margin-bottom:32px}
+.pricing-list li{display:flex;align-items:center;gap:12px;font-size:14px;font-weight:300}
+.pricing-list li svg{color:var(--purple);flex-shrink:0}
+.pricing-box .btn-main{width:100%;justify-content:center}
+.pricing-note{
+  font-size:11px;color:var(--text-dim);text-align:center;margin-top:16px;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+
+/* ═══ FAQ ═══ */
+.faq{padding:120px 0}
+.faq .wrap{max-width:640px}
+.faq-header{margin-bottom:48px}
+.faq-item{border-bottom:1px solid var(--border)}
+.faq-q{
+  width:100%;padding:22px 0;background:none;border:none;
+  display:flex;align-items:center;justify-content:space-between;
+  cursor:pointer;font-family:'Inter',sans-serif;
+  font-size:15px;font-weight:400;color:var(--text);text-align:left;gap:16px;
+}
+.faq-q svg{color:var(--text-dim);flex-shrink:0;transition:transform .3s}
+.faq-item.open .faq-q svg{transform:rotate(45deg)}
+.faq-item.open .faq-q{color:var(--purple)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .35s ease,padding .35s ease}
+.faq-item.open .faq-a{max-height:200px;padding-bottom:22px}
+.faq-a p{font-size:14px;color:var(--text-sec);line-height:1.75;font-weight:300}
+
+/* ═══ FINAL CTA ═══ */
+.final-cta{padding:100px 0;background:var(--dark);color:var(--white)}
+.final-cta .wrap{max-width:600px;text-align:center}
+.final-cta h2{
+  font-family:'Montserrat',sans-serif;font-weight:300;
+  font-size:clamp(24px,3.5vw,32px);letter-spacing:-0.3px;
+  line-height:1.3;margin-bottom:16px;
+}
+.final-cta p{
+  font-size:15px;color:rgba(255,255,255,.45);
+  line-height:1.75;font-weight:300;margin-bottom:40px;
+}
+.final-cta .btn-main{margin:0 auto}
+
+/* ═══ FOOTER ═══ */
+footer{padding:40px 0;border-top:1px solid var(--border)}
+footer .wrap{display:flex;align-items:center;justify-content:space-between}
+.footer-links{display:flex;gap:24px}
+.footer-links a{font-size:12px;color:var(--text-dim);text-decoration:none;transition:color .2s}
+.footer-links a:hover{color:var(--text)}
+
+
+/* ═══ SHOWCASE ═══ */
+.showcase{
+  padding:120px 0;
+  background:linear-gradient(135deg,var(--purple-deep),#4C1D95);
+  color:var(--white);
+}
+.showcase .wrap{
+  display:grid;
+  grid-template-columns:1.1fr .9fr;
+  gap:64px;
+  align-items:center;
+}
+.showcase h2{
+  font-family:'Montserrat',sans-serif;
+  font-weight:300;
+  font-size:clamp(28px,4vw,44px);
+  line-height:1.15;
+  margin:18px 0;
+}
+.showcase p{
+  font-size:16px;
+  line-height:1.8;
+  color:rgba(255,255,255,.75);
+  max-width:520px;
+}
+.showcase-metrics{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+  margin-top:32px;
+}
+.showcase-metrics .metric{
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:16px;
+  padding:20px;
+  backdrop-filter:blur(8px);
+}
+.showcase-metrics strong{
+  display:block;
+  font-family:'Montserrat',sans-serif;
+  font-size:28px;
+  font-weight:300;
+  margin-bottom:6px;
+}
+.showcase-metrics span{
+  color:rgba(255,255,255,.72);
+  font-size:13px;
+}
+.showcase-card{
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:24px;
+  padding:28px;
+  backdrop-filter:blur(12px);
+}
+.showcase-card h3{
+  font-family:'Montserrat',sans-serif;
+  font-weight:400;
+  font-size:14px;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  margin-bottom:24px;
+}
+.showcase-item{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:14px 0;
+  border-bottom:1px solid rgba(255,255,255,.1);
+}
+.showcase-item:last-child{border-bottom:none}
+.showcase-item small{
+  display:block;
+  color:rgba(255,255,255,.55);
+  font-size:11px;
+  margin-bottom:2px;
+}
+.showcase-item strong{
+  font-size:15px;
+  font-weight:500;
+}
+.showcase-item .status{
+  color:#A7F3D0;
+  font-size:12px;
+  font-weight:600;
+}
+.showcase-item .status.warn{color:#FCD34D}
+.showcase-item .status.bad{color:#FCA5A5}
+
+/* ═══ RESPONSIVE ═══ */
+@media(max-width:768px){
+  .nav-links{display:none}
+  .hamburger{display:block}
+  .cine-hero{height:calc(900px + 100vh)}
+  .cine-headline{max-width:88%}
+  .cine-headline p{max-width:100%}
+  .hero{padding:120px 0 60px;min-height:100vh;border-radius:24px 24px 0 0}
+  .hero .wrap{grid-template-columns:1fr;gap:48px;text-align:center}
+  .hero-content{max-width:100%}
+  .hero-sub{margin-left:auto;margin-right:auto}
+  .hero-actions{justify-content:center}
+  .eyebrow{justify-content:center}
+  .hero-device{width:220px;transform:none}
+  .hero-device:hover{transform:none}
+  .hero-badge{display:none}
+
+  .showcase .wrap{grid-template-columns:1fr;gap:40px}
+  .showcase-card{padding:24px}
+  .showcase-metrics{grid-template-columns:1fr}
+
+  .stat-bar .wrap{grid-template-columns:repeat(2,1fr);gap:32px 16px}
+  .reason{grid-template-columns:48px 1fr}
+  .reason-number{font-size:36px}
+  .reason-title{font-size:16px}
+
+  /* Mobile timeline: vertical layout */
+  .process-timeline{grid-template-columns:1fr;gap:0}
+  .process-line-track{
+    left:21px;right:auto;
+    top:44px;bottom:44px;
+    width:1px;height:auto;
+  }
+  .process-line-fill{
+    width:100%;height:0;
+  }
+  .process-step{
+    text-align:left;
+    padding:0 0 48px 68px;
+    position:relative;
+  }
+  .process-step:last-child{padding-bottom:0}
+  .step-marker{
+    position:absolute;left:0;top:0;margin:0;
+  }
+
+  .checks-items{grid-template-columns:1fr}
+  .check-item,
+  .check-item:nth-child(odd),
+  .check-item:nth-child(even){
+    padding:28px 0;border-right:none;padding-left:0;padding-right:0;
+  }
+  .check-num{font-size:22px;min-width:28px}
+  footer .wrap{flex-direction:column;gap:16px;text-align:center}
+  .footer-links{flex-wrap:wrap;justify-content:center}
+  .pricing-box{padding:28px 20px}
+  .pricing-top{flex-direction:column;gap:16px}
+  .pricing-amount{text-align:left}
+  .pricing-amount-sub{text-align:left}
+}
+@media(max-width:480px){
+  .stat-bar .wrap{grid-template-columns:1fr 1fr}
+  .reason{grid-template-columns:1fr;gap:0}
+  .reason-number{font-size:28px;margin-bottom:8px}
+  .reason-accent{display:none}
+}
+
+/* ═══ MOBILE MENU — trigger fiel à referência (bars voam, X entra de fora) ═══ */
+@media(max-width:768px){
+  .menu-trigger-wrap{
+    width:34px;height:34px;position:relative;
+    cursor:pointer;z-index:201;flex-shrink:0;
+  }
+  .menu-trigger,.close-trigger{
+    position:absolute;top:0;left:0;width:100%;height:100%;display:block;
+  }
+  .menu-trigger{z-index:2;opacity:1}
+  .close-trigger{z-index:3;opacity:0}
+  .menu-trigger-bar{
+    display:block;width:100%;height:3px;border-radius:2px;
+    background:var(--purple);margin-bottom:7px;
+    transform:rotate(-45deg);
+  }
+  .menu-trigger-bar.top{width:50%}
+  .menu-trigger-bar.bottom{width:50%;margin-left:50%}
+  .close-trigger-bar{
+    display:block;width:100%;height:3px;border-radius:2px;
+    background:var(--white);position:absolute;top:15px;left:0;
+  }
+
+  .fullscreen-menu{
+    background:var(--purple) !important;
+    opacity:1 !important;
+    overflow:hidden;
+    pointer-events:none;
+    transition:none;
+    clip-path:inset(0 0 100% 0);
+  }
+  .fullscreen-menu.open{ pointer-events:auto; }
+  .fullscreen-menu a{color:var(--white)}
+  .fullscreen-menu a::after{background:var(--white)}
+  .fullscreen-menu .menu-cta{border-color:var(--white);color:var(--white)}
+  .fullscreen-menu .menu-cta:hover{background:var(--white);color:var(--purple)}
+  .menu-content{
+    position:relative;z-index:2;height:100%;width:100%;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+  }
+}
+
+.hero{overflow:hidden}.hero:before{content:"";position:absolute;inset:-20%;background:radial-gradient(circle at 70% 30%,rgba(124,58,237,.08),transparent 40%);pointer-events:none}
+.cta-primary{position:relative;overflow:hidden}.cta-primary:after{content:"";position:absolute;top:0;left:-150%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.5),transparent);transform:skewX(-20deg);transition:left .7s}.cta-primary:hover:after{left:160%}.card,.feature-card{transition:transform .35s,box-shadow .35s}.card:hover,.feature-card:hover{transform:translateY(-6px);box-shadow:0 20px 50px rgba(0,0,0,.12)}
+</style>
+</head>
+<body>
+
+<!-- ═══ INTRO / ABERTURA ═══ -->
+<div id="introPanel"></div>
+<div id="introOverlay">
+  <div class="intro-logo logo-mark" id="introLogo">
+    <span class="logo-icon" id="introIcon">
+      <svg viewBox="0 0 110 170" xmlns="http://www.w3.org/2000/svg">
+        <g stroke="var(--purple)" stroke-width="9" stroke-linecap="round">
+          <line x1="0" y1="45" x2="26" y2="45"/>
+          <line x1="0" y1="72" x2="30" y2="72"/>
+          <line x1="0" y1="99" x2="26" y2="99"/>
+          <line x1="0" y1="126" x2="18" y2="126"/>
+        </g>
+        <rect x="32" y="6" width="60" height="130" rx="30" fill="none" stroke="var(--purple)" stroke-width="10"/>
+        <circle cx="62" cy="40" r="14" fill="var(--purple)"/>
+        <circle cx="62" cy="71" r="14" fill="var(--purple)"/>
+        <circle cx="62" cy="102" r="14" fill="var(--purple)"/>
+        <line x1="86" y1="124" x2="106" y2="150" stroke="var(--purple)" stroke-width="11" stroke-linecap="round"/>
+      </svg>
+    </span>
+    <span class="logo-letters" id="introLetters">
+      <svg viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg"><path class="logo-letter-dark" d="M20,8 L20,58 Q20,84 40,84 Q60,84 60,58 L60,8" fill="none" stroke-width="14" stroke-linecap="round"/></svg>
+      <svg viewBox="0 0 30 100" xmlns="http://www.w3.org/2000/svg"><line class="logo-letter-dark" x1="15" y1="8" x2="15" y2="84" stroke-width="14" stroke-linecap="round"/></svg>
+      <svg viewBox="0 0 70 100" xmlns="http://www.w3.org/2000/svg"><line class="logo-letter-dark" x1="10" y1="8" x2="60" y2="8" stroke-width="14" stroke-linecap="round"/><line class="logo-letter-dark" x1="35" y1="8" x2="35" y2="84" stroke-width="14" stroke-linecap="round"/></svg>
+      <svg viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg"><path class="logo-letter-dark" d="M10,84 L40,8 L70,84" fill="none" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <svg viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg"><path class="logo-letter-accent" d="M10,84 L40,8 L70,84" fill="none" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <svg viewBox="0 0 30 100" xmlns="http://www.w3.org/2000/svg"><line class="logo-letter-accent" x1="15" y1="8" x2="15" y2="84" stroke-width="14" stroke-linecap="round"/></svg>
+    </span>
+  </div>
+</div>
+
+<!-- ═══ NAV ═══ -->
+<nav id="mainNav">
+  <div class="wrap">
+    <a href="#" class="nav-logo logo-mark" aria-label="QuitaAI" id="navLogo">
+      <span class="logo-icon" id="navIcon">
+        <svg viewBox="0 0 110 170" xmlns="http://www.w3.org/2000/svg">
+          <g stroke="var(--purple)" stroke-width="9" stroke-linecap="round">
+            <line x1="0" y1="45" x2="26" y2="45"/>
+            <line x1="0" y1="72" x2="30" y2="72"/>
+            <line x1="0" y1="99" x2="26" y2="99"/>
+            <line x1="0" y1="126" x2="18" y2="126"/>
+          </g>
+          <rect x="32" y="6" width="60" height="130" rx="30" fill="none" stroke="var(--purple)" stroke-width="10"/>
+          <circle id="navLens1" cx="62" cy="40" r="14" fill="var(--purple)"/>
+          <circle id="navLens2" cx="62" cy="71" r="14" fill="var(--purple)"/>
+          <circle id="navLens3" cx="62" cy="102" r="14" fill="var(--purple)"/>
+          <line x1="86" y1="124" x2="106" y2="150" stroke="var(--purple)" stroke-width="11" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <span class="logo-letters" id="navLetters">
+        <svg viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg"><path class="logo-letter-dark" d="M20,8 L20,58 Q20,84 40,84 Q60,84 60,58 L60,8" fill="none" stroke-width="14" stroke-linecap="round"/></svg>
+        <svg viewBox="0 0 30 100" xmlns="http://www.w3.org/2000/svg"><line class="logo-letter-dark" x1="15" y1="8" x2="15" y2="84" stroke-width="14" stroke-linecap="round"/></svg>
+        <svg viewBox="0 0 70 100" xmlns="http://www.w3.org/2000/svg"><line class="logo-letter-dark" x1="10" y1="8" x2="60" y2="8" stroke-width="14" stroke-linecap="round"/><line class="logo-letter-dark" x1="35" y1="8" x2="35" y2="84" stroke-width="14" stroke-linecap="round"/></svg>
+        <svg viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg"><path class="logo-letter-dark" d="M10,84 L40,8 L70,84" fill="none" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <svg viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg"><path class="logo-letter-accent" d="M10,84 L40,8 L70,84" fill="none" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <svg viewBox="0 0 30 100" xmlns="http://www.w3.org/2000/svg"><line class="logo-letter-accent" x1="15" y1="8" x2="15" y2="84" stroke-width="14" stroke-linecap="round"/></svg>
+      </span>
+    </a>
+    <div class="nav-links">
+      <a href="#por-que">Por que analisar</a>
+      <a href="#como-funciona">Como funciona</a>
+      <a href="#analise">O que analisamos</a>
+      <a href="#valores">Valores</a>
+      <a href="multa.html" class="nav-cta">ANALISAR MULTA</a>
+    </div>
+    <div class="hamburger menu-trigger-wrap" id="hamburger" aria-label="Menu" role="button">
+      <span class="menu-trigger">
+        <i class="menu-trigger-bar top"></i>
+        <i class="menu-trigger-bar middle"></i>
+        <i class="menu-trigger-bar bottom"></i>
+      </span>
+      <span class="close-trigger">
+        <i class="close-trigger-bar left"></i>
+        <i class="close-trigger-bar right"></i>
+      </span>
+    </div>
+  </div>
+</nav>
+
+<!-- Fullscreen menu -->
+<div class="fullscreen-menu" id="fullMenu">
+  <div class="menu-content">
+    <a href="#por-que">Por que analisar</a>
+    <a href="#como-funciona">Como funciona</a>
+    <a href="#analise">O que analisamos</a>
+    <a href="#valores">Valores</a>
+    <a href="#duvidas">Dúvidas</a>
+    <a href="multa.html" class="menu-cta">ANALISAR MULTA</a>
+  </div>
+</div>
+
+<!-- ═══ ABERTURA CINEMATOGRÁFICA ═══ -->
+<section class="cine-hero" id="cineHero">
+  <div class="cine-sticky" id="cineSticky">
+    <div class="cine-image" id="cineImage">
+      <canvas id="fluidCanvas"></canvas>
+      <canvas id="phoneCanvas"></canvas>
+    </div>
+    <div class="cine-scroll-cue" id="cineCue">
+      <span>Role para analisar</span>
+      <div class="cue-line"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-content">
+      <div class="eyebrow">Análise jurídica de multas</div>
+      <h1>Sua multa pode ter falhas.<br><em>A maioria tem.</em></h1>
+      <p class="hero-sub">Envie a foto do auto de infração e receba uma análise técnica sobre viabilidade de recurso, prazo restante e fundamentos aplicáveis.</p>
+      <div class="hero-actions">
+        <a href="multa.html" class="btn-main">
+          ENVIAR MINHA MULTA
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+        <a href="#como-funciona" class="btn-ghost">
+          Como funciona
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-device" style="width:340px;padding:18px">
+        <div class="device-bar">
+          <div class="device-dot on"></div>
+          <div class="device-dot"></div>
+          <div class="device-dot"></div>
+        </div>
+        <div style="background:var(--purple-light);border-radius:14px;padding:18px;margin-bottom:16px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">
+            <div>
+              <div style="font-size:11px;color:var(--text-dim);font-family:'Montserrat',sans-serif;letter-spacing:1px;text-transform:uppercase">Análise preliminar</div>
+              <div style="font-size:20px;font-weight:600;color:var(--text);margin-top:4px">Recurso viável</div>
+            </div>
+            <div style="background:rgba(16,185,129,.12);color:#10B981;border-radius:999px;padding:6px 10px;font-size:11px;font-weight:600">Alta</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:12px">
+              <div style="font-size:11px;color:var(--text-dim);margin-bottom:6px">Prazo</div>
+              <div style="font-size:18px;font-weight:700;color:var(--text)">18 dias</div>
+            </div>
+            <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:12px">
+              <div style="font-size:11px;color:var(--text-dim);margin-bottom:6px">Pontos</div>
+              <div style="font-size:18px;font-weight:700;color:var(--text)">7</div>
+            </div>
+          </div>
+        </div>
+        <div style="border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <span style="font-size:13px;font-weight:600;color:var(--text)">Falha formal</span>
+            <span style="font-size:12px;color:#10B981;font-weight:600">Detectada</span>
+          </div>
+          <div style="height:8px;background:#E5E7EB;border-radius:999px;overflow:hidden">
+            <div style="width:76%;height:100%;background:var(--purple);border-radius:999px"></div>
+          </div>
+        </div>
+        <div class="device-action">GERAR RECURSO</div>
+      </div>
+      <div class="hero-badge a">
+        <div class="badge-dot purple">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div class="badge-info">
+          <small>Prazo</small>
+          <strong>18 dias restantes</strong>
+        </div>
+      </div>
+      <div class="hero-badge b">
+        <div class="badge-dot green">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
+        </div>
+        <div class="badge-info">
+          <small>Resultado</small>
+          <strong>Recurso viável</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ STAT BAR ═══ -->
+<section class="stat-bar">
+  <div class="wrap">
+    <div>
+      <div class="stat-num" data-target="76" data-suffix="%">0%</div>
+      <div class="stat-desc">das multas contêm<br>alguma irregularidade</div>
+    </div>
+    <div>
+      <div class="stat-num" data-target="30" data-suffix=" dias">0</div>
+      <div class="stat-desc">é o prazo médio<br>para recurso</div>
+    </div>
+    <div>
+      <div class="stat-num" data-target="3" data-suffix=" min">0</div>
+      <div class="stat-desc">para receber<br>sua análise</div>
+    </div>
+    <div>
+      <div class="stat-num" data-target="2400" data-suffix="<span>+</span>">0</div>
+      <div class="stat-desc">multas analisadas<br>na plataforma</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══ SHOWCASE ═══ -->
+<section class="showcase">
+  <div class="wrap">
+    <div class="showcase-content">
+      <div class="eyebrow" style="color:#C4B5FD"><span style="background:#C4B5FD"></span>Destaque</div>
+      <h2>Veja em segundos se vale a pena recorrer.</h2>
+      <p>Transformamos um auto de infração complexo em uma análise clara: prazo restante, chances de defesa e possíveis falhas formais identificadas.</p>
+      <div class="showcase-metrics">
+        <div class="metric">
+          <strong>76%</strong>
+          <span>dos autos analisados apresentam algum ponto contestável.</span>
+        </div>
+        <div class="metric">
+          <strong>3 min</strong>
+          <span>tempo médio para receber a análise preliminar.</span>
+        </div>
+      </div>
+    </div>
+    <div class="showcase-card">
+      <h3>Resumo da análise</h3>
+      <div class="showcase-item">
+        <div>
+          <small>Prazo restante</small>
+          <strong>18 dias</strong>
+        </div>
+        <span class="status">Dentro do prazo</span>
+      </div>
+      <div class="showcase-item">
+        <div>
+          <small>Notificação</small>
+          <strong>Enviada em 42 dias</strong>
+        </div>
+        <span class="status warn">Possível irregularidade</span>
+      </div>
+      <div class="showcase-item">
+        <div>
+          <small>Equipamento</small>
+          <strong>Aferição pendente</strong>
+        </div>
+        <span class="status bad">Revisar</span>
+      </div>
+      <div class="showcase-item">
+        <div>
+          <small>Recomendação</small>
+          <strong>Prosseguir com recurso</strong>
+        </div>
+        <span class="status">Alta viabilidade</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ POR QUE ANALISAR ═══ -->
+<section class="reasons" id="por-que">
+  <div class="wrap">
+    <div class="reasons-header">
+      <div class="eyebrow">Por que analisar</div>
+      <h2 class="section-title">A maioria das pessoas paga a multa<br>sem nem olhar o auto.</h2>
+      <p class="section-sub">Autos de infração possuem requisitos legais obrigatórios. Quando algum está ausente ou incorreto, o recurso administrativo é um direito do condutor.</p>
+    </div>
+
+    <div class="reasons-list">
+      <div class="reason">
+        <div class="reason-accent"></div>
+        <div class="reason-number">01</div>
+        <div class="reason-content">
+          <h3 class="reason-title">Prazos passam rápido.</h3>
+          <p class="reason-text">O prazo para recurso em primeira instância é de 30 dias a partir da notificação. Depois disso, só resta o recurso ao CETRAN — mais complexo e com menor taxa de acolhimento.</p>
+        </div>
+      </div>
+      <div class="reason">
+        <div class="reason-accent"></div>
+        <div class="reason-number">02</div>
+        <div class="reason-content">
+          <h3 class="reason-title">Erros formais são comuns.</h3>
+          <p class="reason-text">Endereços errados, códigos de enquadramento trocados, ausência de identificação do agente. Pequenos erros que invalidam o auto — mas que passam despercebidos sem análise técnica.</p>
+        </div>
+      </div>
+      <div class="reason">
+        <div class="reason-accent"></div>
+        <div class="reason-number">03</div>
+        <div class="reason-content">
+          <h3 class="reason-title">Recorrer é um direito.</h3>
+          <p class="reason-text">O Art. 281 do CTB garante ao condutor o direito de apresentar defesa prévia e recurso. Não se trata de "escapar" da multa — é exercer uma garantia legal.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ COMO FUNCIONA — GSAP pinned ═══ -->
+<section class="process" id="como-funciona">
+  <div class="process-pin">
+    <div class="process-inner">
+      <div class="process-header">
+        <div class="eyebrow">Como funciona</div>
+        <h2 class="section-title">Três etapas. Sem burocracia.</h2>
+        <p class="section-sub">Da foto da multa até o recurso pronto — tudo acontece em minutos.</p>
+      </div>
+
+      <div class="process-timeline">
+        <div class="process-line-track">
+          <div class="process-line-fill"></div>
+        </div>
+        <div class="process-step" data-step="1">
+          <div class="step-marker"><span class="step-num">1</span></div>
+          <h3 class="step-title">Envie a multa</h3>
+          <p class="step-text">Tire uma foto ou envie o PDF do auto de infração pela plataforma. Leva menos de um minuto.</p>
+        </div>
+        <div class="process-step" data-step="2">
+          <div class="step-marker"><span class="step-num">2</span></div>
+          <h3 class="step-title">Receba a análise</h3>
+          <p class="step-text">Nossa análise identifica falhas formais, calcula o grau de complexidade e avalia o prazo restante para recurso.</p>
+        </div>
+        <div class="process-step" data-step="3">
+          <div class="step-marker"><span class="step-num">3</span></div>
+          <h3 class="step-title">Contrate a defesa</h3>
+          <p class="step-text">Se houver fundamento, elaboramos o recurso administrativo completo para você protocolar.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ O QUE ANALISAMOS ═══ -->
+<section class="checks" id="analise">
+  <div class="wrap">
+    <div class="checks-header">
+      <div class="eyebrow">O que analisamos</div>
+      <h2 class="section-title">Cada multa passa por seis verificações.</h2>
+      <p class="section-sub">Cada ponto é cruzado com a legislação vigente e a jurisprudência aplicável.</p>
+    </div>
+
+    <div class="checks-items">
+      <div class="check-item">
+        <div class="check-num">01</div>
+        <div class="check-body">
+          <h3 class="check-title">Requisitos do auto</h3>
+          <p class="check-text">Identificação do veículo, local, data, enquadramento legal e assinatura do agente autuador.</p>
+        </div>
+      </div>
+      <div class="check-item">
+        <div class="check-num">02</div>
+        <div class="check-body">
+          <h3 class="check-title">Prazos de notificação</h3>
+          <p class="check-text">Se o órgão respeitou os 30 dias para notificação da autuação ao proprietário do veículo.</p>
+        </div>
+      </div>
+      <div class="check-item">
+        <div class="check-num">03</div>
+        <div class="check-body">
+          <h3 class="check-title">Enquadramento legal</h3>
+          <p class="check-text">Se o artigo e incisos citados correspondem à conduta descrita no auto de infração.</p>
+        </div>
+      </div>
+      <div class="check-item">
+        <div class="check-num">04</div>
+        <div class="check-body">
+          <h3 class="check-title">Duplicidade</h3>
+          <p class="check-text">Verificação de dupla autuação pelo mesmo fato — comum em trechos com radares sequenciais.</p>
+        </div>
+      </div>
+      <div class="check-item">
+        <div class="check-num">05</div>
+        <div class="check-body">
+          <h3 class="check-title">Equipamento</h3>
+          <p class="check-text">Validade da aferição e certificação do INMETRO para radares e etilômetros utilizados.</p>
+        </div>
+      </div>
+      <div class="check-item">
+        <div class="check-num">06</div>
+        <div class="check-body">
+          <h3 class="check-title">Sinalização</h3>
+          <p class="check-text">Placas visíveis, faixas conforme norma e indicação prévia de fiscalização eletrônica.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PRICING ═══ -->
+<section class="pricing" id="valores">
+  <div class="wrap">
+    <div class="pricing-header">
+      <div class="eyebrow">Valores</div>
+      <h2 class="section-title">Valor único, sem surpresas.</h2>
+      <p class="section-sub">A análise inicial é gratuita. Você só paga se decidir contratar a defesa.</p>
+    </div>
+    <div class="pricing-box">
+      <div class="pricing-top">
+        <div>
+          <div class="pricing-plan">RECURSO ADMINISTRATIVO</div>
+          <p class="pricing-plan-sub">Defesa completa para sua multa.</p>
+        </div>
+        <div>
+          <div class="pricing-amount">197<small>,00</small></div>
+          <div class="pricing-amount-sub">pagamento único</div>
+        </div>
+      </div>
+      <ul class="pricing-list">
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Análise completa do auto de infração</li>
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Recurso administrativo fundamentado</li>
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Acompanhamento até decisão final</li>
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Suporte direto via WhatsApp</li>
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>PIX, cartão ou boleto</li>
+      </ul>
+      <a href="multa.html" class="btn-main">ANALISAR MINHA MULTA</a>
+      <div class="pricing-note">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg>
+        Análise inicial gratuita — você decide se quer prosseguir.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FAQ ═══ -->
+<section class="faq" id="duvidas">
+  <div class="wrap">
+    <div class="faq-header">
+      <div class="eyebrow">Dúvidas frequentes</div>
+      <h2 class="section-title">O que você precisa saber.</h2>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q">A análise inicial tem algum custo?<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+      <div class="faq-a"><p>Não. Você envia a multa, recebe a análise com grau de complexidade e prazo — e só então decide se quer contratar o recurso.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q">Quanto tempo leva para receber a análise?<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+      <div class="faq-a"><p>A análise preliminar é gerada em minutos. O recurso completo, após contratação, é elaborado em até 48 horas úteis.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q">Vocês garantem que a multa será cancelada?<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+      <div class="faq-a"><p>Não. Nenhum profissional pode garantir resultado. O que fazemos é identificar os fundamentos técnicos e jurídicos aplicáveis e elaborar a melhor defesa possível dentro da legislação.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q">Funciona para qualquer tipo de multa?<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+      <div class="faq-a"><p>Analisamos multas de trânsito em geral — excesso de velocidade, avanço de sinal, estacionamento, faixa exclusiva, entre outras. Cada caso é avaliado individualmente.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q">Preciso ir pessoalmente ao órgão de trânsito?<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+      <div class="faq-a"><p>Na maioria dos casos, o recurso pode ser protocolado eletronicamente. Quando necessário presencialmente, você recebe o documento pronto para protocolar.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FINAL CTA ═══ -->
+<section class="final-cta">
+  <div class="wrap">
+    <h2>Sua multa tem prazo.<br>Seu recurso também.</h2>
+    <p>Quanto antes a análise, mais margem para uma defesa sólida. A análise inicial é gratuita.</p>
+    <a href="multa.html" class="btn-main">
+      ENVIAR MINHA MULTA
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </a>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+  <div class="wrap">
+    <div class="logo-mark footer-mark" aria-label="QuitaAI">
+      <span class="logo-icon">
+        <svg viewBox="0 0 110 170" xmlns="http://www.w3.org/2000/svg">
+          <g stroke="var(--purple)" stroke-width="9" stroke-linecap="round">
+            <line x1="0" y1="45" x2="26" y2="45"/>
+            <line x1="0" y1="72" x2="30" y2="72"/>
+            <line x1="0" y1="99" x2="26" y2="99"/>
+            <line x1="0" y1="126" x2="18" y2="126"/>
+          </g>
+          <rect x="32" y="6" width="60" height="130" rx="30" fill="none" stroke="var(--purple)" stroke-width="10"/>
+          <circle cx="62" cy="40" r="14" fill="var(--purple)"/>
+          <circle cx="62" cy="71" r="14" fill="var(--purple)"/>
+          <circle cx="62" cy="102" r="14" fill="var(--purple)"/>
+          <line x1="86" y1="124" x2="106" y2="150" stroke="var(--purple)" stroke-width="11" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <span class="logo-letters">
+        <svg viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg"><path class="logo-letter-dark" d="M20,8 L20,58 Q20,84 40,84 Q60,84 60,58 L60,8" fill="none" stroke-width="14" stroke-linecap="round"/></svg>
+        <svg viewBox="0 0 30 100" xmlns="http://www.w3.org/2000/svg"><line class="logo-letter-dark" x1="15" y1="8" x2="15" y2="84" stroke-width="14" stroke-linecap="round"/></svg>
+        <svg viewBox="0 0 70 100" xmlns="http://www.w3.org/2000/svg"><line class="logo-letter-dark" x1="10" y1="8" x2="60" y2="8" stroke-width="14" stroke-linecap="round"/><line class="logo-letter-dark" x1="35" y1="8" x2="35" y2="84" stroke-width="14" stroke-linecap="round"/></svg>
+        <svg viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg"><path class="logo-letter-dark" d="M10,84 L40,8 L70,84" fill="none" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <svg viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg"><path class="logo-letter-accent" d="M10,84 L40,8 L70,84" fill="none" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <svg viewBox="0 0 30 100" xmlns="http://www.w3.org/2000/svg"><line class="logo-letter-accent" x1="15" y1="8" x2="15" y2="84" stroke-width="14" stroke-linecap="round"/></svg>
+      </span>
+    </div>
+    <div class="footer-links">
+      <a href="#como-funciona">Como funciona</a>
+      <a href="#valores">Valores</a>
+      <a href="#duvidas">Dúvidas</a>
+      <a href="#">Termos de uso</a>
+      <a href="#">Política de privacidade</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+
+  /* ═══════════════════════════════════════
+     INTRO / ABERTURA — roda uma vez ao carregar
+     ═══════════════════════════════════════ */
+  var introLetters = document.querySelectorAll('#introLetters > svg');
+  var introIcon = document.getElementById('introIcon');
+  var introOverlay = document.getElementById('introOverlay');
+  var introPanel = document.getElementById('introPanel');
+
+  gsap.set(introIcon, { opacity: 0, scale: 0.6 });
+  gsap.set(introLetters, { opacity: 0, x: 40 });
+
+  var introTl = gsap.timeline({ delay: 0.2 });
+
+  introTl.to(introIcon, { opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.6)' });
+
+  introTl.to(introLetters, {
+    opacity: 1,
+    x: 0,
+    duration: 0.5,
+    stagger: 0.08,
+    ease: 'power3.out'
+  }, '-=0.15');
+
+  introTl.to({}, { duration: 0.5 });
+
+  introTl.to('#introLogo', {
+    scale: 1.06,
+    opacity: 0,
+    duration: 0.4,
+    ease: 'power2.in'
+  });
+
+  introTl.to(introOverlay, {
+    opacity: 0,
+    duration: 0.3,
+    onComplete: function(){ introOverlay.style.display = 'none'; }
+  }, '-=0.1');
+
+  introTl.to(introPanel, {
+    yPercent: -100,
+    duration: 0.7,
+    ease: 'power4.inOut',
+    onComplete: function(){
+      introPanel.style.display = 'none';
+      ScrollTrigger.refresh();
+    }
+  }, '-=0.35');
+
+  /* ── Nav scroll ── */
+  var mainNav = document.getElementById('mainNav');
+  window.addEventListener('scroll',function(){
+    mainNav.classList.toggle('scrolled', window.scrollY > window.innerHeight * 0.9);
+  });
+
+  /* ── Fullscreen menu (trigger fiel à referência: bars voam, X entra de fora) ── */
+  var hamburger = document.getElementById('hamburger');
+  var menuTriggerEl = hamburger.querySelector('.menu-trigger');
+  var closeTriggerEl = hamburger.querySelector('.close-trigger');
+  var openBars = hamburger.querySelectorAll('.menu-trigger-bar');
+  var closeBars = hamburger.querySelectorAll('.close-trigger-bar');
+  var fullMenu = document.getElementById('fullMenu');
+  var menuContent = fullMenu.querySelector('.menu-content');
+  var menuOpen = false;
+
+  gsap.set(fullMenu, { clipPath:'inset(0% 0% 100% 0%)' });
+  gsap.set(menuContent, { autoAlpha:0, y:20 });
+  /* X começa longe, fora da área do ícone, igual à referência */
+  gsap.set(closeBars[0], { x:60, y:-60, rotate:-45 });
+  gsap.set(closeBars[1], { x:-60, y:-60, rotate:45 });
+
+  var tlMenu = gsap.timeline({ paused:true });
+
+  tlMenu
+    /* bars do hambúrguer voam pra fora, uma de cada vez */
+    .to(openBars[0], { x:60, y:-60, duration:.35, ease:'power4.in' }, 0)
+    .to(openBars[1], { x:60, y:-60, duration:.35, ease:'power4.in' }, .05)
+    .to(openBars[2], { x:60, y:-60, duration:.35, ease:'power4.in' }, .1)
+    /* troca de grupo: some o hambúrguer, revela o container do X */
+    .to(menuTriggerEl, { autoAlpha:0, duration:.15 }, .25)
+    .to(closeTriggerEl, { autoAlpha:1, duration:.15 }, .3)
+    /* roxo cobre a tela inteira de cima pra baixo — o próprio container, sem gaps possíveis */
+    .to(fullMenu, { clipPath:'inset(0% 0% 0% 0%)', duration:.6, ease:'power4.inOut' }, .15)
+    /* X voa de fora pra dentro, formando o ícone de fechar */
+    .to(closeBars[0], { x:0, y:0, duration:.5, ease:'power4.out' }, .3)
+    .to(closeBars[1], { x:0, y:0, duration:.5, ease:'power4.out' }, .35)
+    /* conteúdo do menu aparece por cima */
+    .to(menuContent, { autoAlpha:1, y:0, duration:.4, ease:'power3.out' }, .45);
+
+  function toggleMenu(){
+    menuOpen = !menuOpen;
+    document.body.classList.toggle('menu-open', menuOpen);
+    document.body.style.overflow = menuOpen ? 'hidden' : '';
+    if(menuOpen){
+      fullMenu.classList.add('open');
+      tlMenu.play();
+    } else {
+      tlMenu.reverse();
+    }
+  }
+  hamburger.addEventListener('click', toggleMenu);
+  fullMenu.querySelectorAll('a').forEach(function(a){
+    a.addEventListener('click', function(){ if(menuOpen) toggleMenu(); });
+  });
+  tlMenu.eventCallback('onReverseComplete', function(){
+    fullMenu.classList.remove('open');
+  });
+
+  /* ── FAQ ── */
+  document.querySelectorAll('.faq-q').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var item = btn.parentElement;
+      var wasOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(function(i){i.classList.remove('open')});
+      if(!wasOpen) item.classList.add('open');
+    });
+  });
+
+  /* ── Counter animation ── */
+  var counters = document.querySelectorAll('.stat-num[data-target]');
+  var counted = false;
+  function runCounters(){
+    if(counted) return;
+    var bar = document.querySelector('.stat-bar');
+    if(!bar) return;
+    if(bar.getBoundingClientRect().top < window.innerHeight * .85){
+      counted = true;
+      counters.forEach(function(el){
+        var target = parseInt(el.getAttribute('data-target'));
+        var suffix = el.getAttribute('data-suffix')||'';
+        var start = performance.now(), dur = 1600;
+        (function tick(now){
+          var p = Math.min((now-start)/dur,1);
+          var v = Math.round(target*(1-Math.pow(1-p,3)));
+          el.innerHTML = v.toLocaleString('pt-BR')+suffix;
+          if(p<1) requestAnimationFrame(tick);
+        })(performance.now());
+      });
+    }
+  }
+  window.addEventListener('scroll', runCounters);
+  runCounters();
+
+
+ /* ── Reason accent (IntersectionObserver = não trava scroll) ── */
+var reasonObserver = new IntersectionObserver(function(entries){
+  entries.forEach(function(entry){
+    if (entry.isIntersecting) entry.target.classList.add('in-view');
+  });
+}, { threshold: 0.2 });
+document.querySelectorAll('.reason').forEach(function(r){ reasonObserver.observe(r); });
+
+  /* ═══════════════════════════════════════
+     ABERTURA CINEMATOGRÁFICA — reveal por scroll
+     A "janela" do documento abre, revela evidências
+     (jurisprudência, radar, fundamentação) e desemboca no hero.
+     ═══════════════════════════════════════ */
+  var cineHero = document.getElementById('cineHero');
+  if(cineHero){
+    var cineCue = document.getElementById('cineCue');
+    var heroSection = document.querySelector('.hero');
+
+    function clamp(v,a,b){ return Math.min(Math.max(v,a),b); }
+    function lerp(a,b,t){ return a+(b-a)*t; }
+    function trackLength(){ return Math.max(cineHero.offsetHeight - window.innerHeight, 1); }
+
+    /* progresso 0..1 atual, lido pelo loop de render do Three.js */
+    window.__cineProgress = 0;
+
+    function updateCine(){
+      var rect = cineHero.getBoundingClientRect();
+      var scrolled = clamp(-rect.top, 0, trackLength());
+      var progress = scrolled / trackLength();
+      window.__cineProgress = progress;
+
+      cineCue.style.opacity = clamp(1 - progress/0.12, 0, 1);
+
+      /* O fundo roxo fluido + o iPhone 3D não desaparecem: ficam fixos
+         como um "falso" background, sempre em tela cheia. O hero branco
+         sobe de baixo pra cima, do zero até cobrir 100% da tela, dando
+         a impressão de que está passando totalmente por cima da cena. */
+      if(heroSection){
+        var riseP = clamp((progress-0.72)/0.28, 0, 1);
+        heroSection.style.transform = 'translateY(' + (100 - riseP*100) + '%)';
+      }
+    }
+
+    var cineTicking = false;
+    window.addEventListener('scroll', function(){
+      if(!cineTicking){
+        requestAnimationFrame(function(){ updateCine(); cineTicking = false; });
+        cineTicking = true;
+      }
+    }, { passive:true });
+    window.addEventListener('resize', updateCine);
+    updateCine();
+  }
+
+  /* ═══════════════════════════════════════
+     THREE.JS — Roxo fluido + iPhone 3D girando
+     Substitui a imagem estática: um fundo de "fluido"
+     roxo animado por shader vai preenchendo a tela,
+     enquanto o modelo 3D do iPhone surge do centro,
+     cresce e gira suavemente. O texto do site aparece
+     projetado na tela do próprio iPhone (canvas texture).
+     ═══════════════════════════════════════ */
+  if(cineHero && window.THREE){
+    var fluidCanvas = document.getElementById('fluidCanvas');
+    var phoneCanvas = document.getElementById('phoneCanvas');
+    var sticky = document.getElementById('cineSticky');
+
+    /* ---------- fundo: shader de fluido roxo ---------- */
+    var bgScene = new THREE.Scene();
+    var bgCamera = new THREE.OrthographicCamera(-1,1,1,-1,0,1);
+    var bgRenderer = new THREE.WebGLRenderer({ canvas: fluidCanvas, antialias:true, alpha:false });
+    bgRenderer.setPixelRatio(Math.min(window.devicePixelRatio||1, 2));
+
+    var fluidUniforms = {
+      uTime:     { value: 0 },
+      uProgress: { value: 0 },
+      uRes:      { value: new THREE.Vector2(1,1) },
+      uColorDark:{ value: new THREE.Color(0x0F0D1A) },
+      uColorMid: { value: new THREE.Color(0x6D28D9) },
+      uColorHi:  { value: new THREE.Color(0xC4B5FD) }
+    };
+
+    var fluidMat = new THREE.ShaderMaterial({
+      uniforms: fluidUniforms,
+      vertexShader: [
+        'varying vec2 vUv;',
+        'void main(){ vUv = uv; gl_Position = vec4(position,1.0); }'
+      ].join('\n'),
+      fragmentShader: [
+        'precision highp float;',
+        'varying vec2 vUv;',
+        'uniform float uTime;',
+        'uniform float uProgress;',
+        'uniform vec2 uRes;',
+        'uniform vec3 uColorDark;',
+        'uniform vec3 uColorMid;',
+        'uniform vec3 uColorHi;',
+        'float hash(vec2 p){ return fract(sin(dot(p,vec2(41.3,289.1)))*43758.5453); }',
+        'float noise(vec2 p){',
+        '  vec2 i=floor(p), f=fract(p);',
+        '  float a=hash(i), b=hash(i+vec2(1.0,0.0));',
+        '  float c=hash(i+vec2(0.0,1.0)), d=hash(i+vec2(1.0,1.0));',
+        '  vec2 u=f*f*(3.0-2.0*f);',
+        '  return mix(a,b,u.x)+(c-a)*u.y*(1.0-u.x)+(d-b)*u.x*u.y;',
+        '}',
+        'float fbm(vec2 p){',
+        '  float v=0.0, a=0.5;',
+        '  for(int i=0;i<5;i++){ v+=a*noise(p); p*=2.02; a*=0.55; }',
+        '  return v;',
+        '}',
+        'void main(){',
+        '  vec2 uv = vUv;',
+        '  vec2 ar = uRes / min(uRes.x,uRes.y);',
+        '  vec2 p = (uv-0.5)*ar;',
+        '  float t = uTime*0.12;',
+        '  float n1 = fbm(p*1.6 + vec2(t, -t*0.7));',
+        '  float n2 = fbm(p*2.4 - vec2(t*0.6, t*1.1) + 3.1);',
+        '  float blend = fbm(vec2(n1,n2)*1.3 + t*0.2);',
+        '  vec3 col = mix(uColorDark, uColorMid, smoothstep(0.15,0.85,n1));',
+        '  col = mix(col, uColorHi, smoothstep(0.55,0.95,blend)*0.65);',
+        '  float dist = length(p);',
+        '  float radius = uProgress*1.35;',
+        '  float reveal = smoothstep(radius+0.22, radius-0.22, dist);',
+        '  vec3 finalCol = mix(uColorDark, col, reveal);',
+        '  gl_FragColor = vec4(finalCol, 1.0);',
+        '}'
+      ].join('\n')
+    });
+    var bgQuad = new THREE.Mesh(new THREE.PlaneGeometry(2,2), fluidMat);
+    bgScene.add(bgQuad);
+
+    /* ---------- primeiro plano: iPhone 3D ---------- */
+    var fgScene = new THREE.Scene();
+    var fgCamera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
+    fgCamera.position.set(0,0,9);
+    var fgRenderer = new THREE.WebGLRenderer({ canvas: phoneCanvas, antialias:true, alpha:true });
+    fgRenderer.setPixelRatio(Math.min(window.devicePixelRatio||1, 2));
+    fgRenderer.outputEncoding = THREE.sRGBEncoding;
+
+    fgScene.add(new THREE.HemisphereLight(0xE9D8FF, 0x150826, 0.9));
+    var keyLight = new THREE.DirectionalLight(0xFFFFFF, 1.4);
+    keyLight.position.set(4,6,8);
+    fgScene.add(keyLight);
+    var rimLight = new THREE.DirectionalLight(0xC4B5FD, 1.1);
+    rimLight.position.set(-6,-2,-4);
+    fgScene.add(rimLight);
+
+    var phoneRig = new THREE.Group();
+    fgScene.add(phoneRig);
+    phoneRig.scale.setScalar(0.0001);
+
+    /* canvas com o texto que aparece "dentro" do iPhone, na tela */
+    function makeScreenTexture(){
+      var c = document.createElement('canvas');
+      c.width = 512; c.height = 1024;
+      var ctx = c.getContext('2d');
+      ctx.fillStyle = '#1E1B2E';
+      ctx.fillRect(0,0,c.width,c.height);
+      var grad = ctx.createLinearGradient(0,0,0,c.height);
+      grad.addColorStop(0,'#3A1E8C');
+      grad.addColorStop(1,'#0F0D1A');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0,0,c.width,c.height);
+
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#C4B5FD';
+      ctx.font = '300 26px Montserrat, sans-serif';
+      ctx.fillText('ANÁLISE JURÍDICA', c.width/2, 300);
+
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = '400 44px Montserrat, sans-serif';
+      wrapText(ctx, 'Toda multa carrega uma chance de defesa.', c.width/2, 380, 420, 54);
+
+      ctx.fillStyle = 'rgba(255,255,255,.7)';
+      ctx.font = '300 26px Inter, sans-serif';
+      wrapText(ctx, 'Podemos te ajudar em minutos, não em dias.', c.width/2, 620, 400, 36);
+
+      ctx.strokeStyle = '#7C3AED';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(c.width/2-60, 700);
+      ctx.lineTo(c.width/2+60, 700);
+      ctx.stroke();
+
+      var tex = new THREE.CanvasTexture(c);
+      tex.needsUpdate = true;
+      return tex;
+    }
+    function wrapText(ctx, text, x, y, maxWidth, lineHeight){
+      var words = text.split(' '), line = '', lines = [];
+      for(var i=0;i<words.length;i++){
+        var test = line + words[i] + ' ';
+        if(ctx.measureText(test).width > maxWidth && line !== ''){
+          lines.push(line); line = words[i] + ' ';
+        } else { line = test; }
+      }
+      lines.push(line);
+      var startY = y - ((lines.length-1)*lineHeight)/2;
+      for(var j=0;j<lines.length;j++){
+        ctx.fillText(lines[j].trim(), x, startY + j*lineHeight);
+      }
+    }
+
+    var screenTexture = makeScreenTexture();
+    var screenMat = new THREE.MeshBasicMaterial({ map: screenTexture, toneMapped:false, side:THREE.DoubleSide });
+
+    /* paleta realista: metal (titânio levemente arroxeado) no corpo/
+       botões/borda, vidro escuro nas costas, preto fosco nos detalhes
+       (dynamic island, alto-falantes, bandeja de chip), lentes pretas
+       brilhantes na câmera, e o roxo de marca reservado só pra logo. */
+    var metalMat = new THREE.MeshStandardMaterial({ color:0x554066, metalness:0.85, roughness:0.35 });
+    var glassBackMat = new THREE.MeshPhysicalMaterial({ color:0x1c1a24, metalness:0.3, roughness:0.12, clearcoat:0.9, clearcoatRoughness:0.1 });
+    var bezelMat = new THREE.MeshStandardMaterial({ color:0x0b0a10, metalness:0.2, roughness:0.55 });
+    var lensMat = new THREE.MeshStandardMaterial({ color:0x050508, metalness:0.95, roughness:0.08 });
+    var logoMat = new THREE.MeshStandardMaterial({ color:0x7C3AED, metalness:0.6, roughness:0.3, emissive:0x2a1050, emissiveIntensity:0.4 });
+
+    function hasAncestorNamed(node, regex){
+      var n = node;
+      while(n){
+        if(regex.test(n.name||'')) return true;
+        n = n.parent;
+      }
+      return false;
+    }
+    function materialFor(node){
+      if(hasAncestorNamed(node, /screen border/i)) return bezelMat;
+      if(hasAncestorNamed(node, /back side/i)) return glassBackMat;
+      if(hasAncestorNamed(node, /metal border/i)) return metalMat;
+      if(hasAncestorNamed(node, /button/i)) return metalMat;
+      if(hasAncestorNamed(node, /connector/i)) return metalMat;
+      if(hasAncestorNamed(node, /dynamic island/i)) return bezelMat;
+      if(hasAncestorNamed(node, /bottom details/i)) return bezelMat;
+      if(hasAncestorNamed(node, /logo/i)) return logoMat;
+      if(hasAncestorNamed(node, /camera/i)) return lensMat;
+      return metalMat;
+    }
+
+    var loader = new THREE.GLTFLoader();
+    loader.load('iphone14pro.gltf', function(gltf){
+      var model = gltf.scene;
+
+      /* remove de vez (não só esconder) o "chão"/plano de fundo do
+         modelo original — se só ficasse invisível, ele continuaria
+         "contando" no cálculo de tamanho/centro do objeto, fazendo
+         o telefone renderizar pequeno e fora do centro. */
+      var toRemove = [];
+      var screenNode = null;
+      model.traverse(function(node){
+        if(node.isMesh){
+          if(/floor|ground|backdrop/i.test(node.name)){
+            toRemove.push(node);
+            return;
+          }
+          var isScreen = /screen/i.test(node.name) && !/border/i.test(node.name);
+          node.material = isScreen ? screenMat : materialFor(node);
+          if(isScreen && !screenNode) screenNode = node;
+        }
+      });
+      toRemove.forEach(function(node){ if(node.parent) node.parent.remove(node); });
+
+      /* achamos, inspecionando o arquivo diretamente, que quem carrega
+         a inclinação "de mockup" (~49° no eixo Y) é o nó "iPhone 14 Pro"
+         em si — não o "Container Rotation" (esse já vem sem rotação).
+         Zeramos só a rotação desse nó específico, mantendo posição e
+         escala, para o conjunto ficar perfeitamente reto e de frente. */
+      model.traverse(function(node){
+        if(/iphone/i.test(node.name)){
+          node.rotation.set(0,0,0);
+          node.quaternion.identity();
+          node.updateMatrix();
+        }
+      });
+      model.updateMatrixWorld(true);
+
+      /* centraliza e normaliza a escala do modelo para caber no palco
+         (bounding box calculado já sem o chão removido, e já com a
+         orientação corrigida) */
+      var box = new THREE.Box3().setFromObject(model);
+      var size = new THREE.Vector3(); box.getSize(size);
+      var center = new THREE.Vector3(); box.getCenter(center);
+      model.position.sub(center);
+      var maxDim = Math.max(size.x,size.y,size.z) || 1;
+      var normScale = 5.4 / maxDim;
+      model.scale.setScalar(normScale);
+
+      phoneRig.add(model);
+    });
+
+    function easeOutCubic(t){ return 1 - Math.pow(1-t, 3); }
+
+    function resize3D(){
+      var w = sticky.clientWidth, h = sticky.clientHeight;
+      bgRenderer.setSize(w,h,false);
+      fgRenderer.setSize(w,h,false);
+      fluidUniforms.uRes.value.set(w,h);
+      fgCamera.aspect = w/h;
+      fgCamera.updateProjectionMatrix();
+    }
+    resize3D();
+    window.addEventListener('resize', resize3D);
+
+    var clock = new THREE.Clock();
+    var TOTAL_SPINS = 2; /* nº de voltas completas durante o crescimento */
+    function animate3D(){
+      requestAnimationFrame(animate3D);
+      var dt = clock.getDelta();
+      var progress = window.__cineProgress || 0;
+
+      fluidUniforms.uTime.value += dt;
+      fluidUniforms.uProgress.value = easeOutCubic(clamp01(progress/0.85));
+
+      /* crescimento e giro são a MESMA fase do scroll (0 → 0.6):
+         o objeto gira enquanto cresce e, no instante em que fica
+         grande o suficiente para ler a tela, o giro termina em 0°
+         (de frente pra câmera) e congela - o site segue normalmente. */
+      var growP = easeOutCubic(clamp01(progress/0.6));
+      var s = lerp3(0.0001, 1, growP);
+      phoneRig.scale.setScalar(s);
+      phoneRig.rotation.y = (1 - growP) * TOTAL_SPINS * Math.PI * 2;
+      phoneRig.rotation.x = 0;
+      phoneRig.position.set(0,0,0);
+
+      bgRenderer.render(bgScene, bgCamera);
+      fgRenderer.render(fgScene, fgCamera);
+    }
+    function clamp01(v){ return Math.min(Math.max(v,0),1); }
+    function lerp3(a,b,t){ return a+(b-a)*t; }
+    animate3D();
+  }
+
+  /* ── Hero como "payoff": revela com fade ao entrar na tela ── */
+  var heroEl = document.querySelector('.hero');
+  if(heroEl){
+    var heroObserver = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if(entry.isIntersecting){ heroEl.classList.add('in-view'); heroObserver.disconnect(); }
+      });
+    }, { threshold:0.15 });
+    heroObserver.observe(heroEl);
+  }
+
+  /* ── Smooth scroll ── */
+  document.querySelectorAll('a[href^="#"]').forEach(function(a){
+    a.addEventListener('click',function(e){
+      var t = document.querySelector(a.getAttribute('href'));
+      if(t){e.preventDefault();t.scrollIntoView({behavior:'smooth',block:'start'});}
+    });
+  });
+
+  /* ═══════════════════════════════════════
+     GSAP — Logo: letras entram no semáforo
+     ═══════════════════════════════════════ */
+  var navLetters = document.querySelectorAll('#navLetters > svg');
+  var navLenses = [
+    { el: document.getElementById('navLens1'), color: '#7C3AED' },
+    { el: document.getElementById('navLens2'), color: '#7C3AED' },
+    { el: document.getElementById('navLens3'), color: '#7C3AED' }
+  ];
+
+  var logoTl = gsap.timeline({
+    scrollTrigger:{
+      trigger:'body',
+      start:'top top',
+      end:'+=500',
+      scrub:0.8
+    }
+  });
+
+  var logoStep = 0.22;
+
+  navLetters.forEach(function(letter, i){
+    var start = i * logoStep;
+    var lens = navLenses[i % 3];
+
+    logoTl.to(letter, {
+      x: -14 - i * 3,
+      scale: 0.25,
+      opacity: 0,
+      duration: 0.6,
+      ease: 'sine.inOut'
+    }, start);
+
+    logoTl.to(lens.el, {
+      attr:{ fill:'#ffffff' },
+      duration: 0.28,
+      ease:'sine.inOut'
+    }, start + 0.15);
+
+    logoTl.to(lens.el, {
+      attr:{ fill: lens.color },
+      duration: 0.35,
+      ease:'sine.inOut'
+    }, start + 0.45);
+  });
+
+  logoTl.to('#navIcon', {
+    scale: 1.12,
+    duration: 0.2,
+    ease:'sine.out',
+    yoyo:true,
+    repeat:1
+  }, navLetters.length * logoStep + 0.1);
+
+  /* ═══════════════════════════════════════
+     GSAP — Como Funciona pinned timeline
+     ═══════════════════════════════════════ */
+ gsap.registerPlugin(ScrollTrigger);
+ ScrollTrigger.normalizeScroll(true);
+
+  var isMobile = window.innerWidth < 769;
+  var steps = gsap.utils.toArray('.process-step');
+  var markers = gsap.utils.toArray('.step-marker');
+  var lineFill = document.querySelector('.process-line-fill');
+  var header = document.querySelector('.process-header');
+
+  /* Master timeline */
+  var tl = gsap.timeline({
+    scrollTrigger:{
+      trigger:'.process',
+      pin:'.process-pin',
+      start:'top top',
+      end:'+=2200',
+      scrub:0.8,
+      anticipatePin:1,
+    }
+  });
+
+  /* Header fade in */
+  gsap.set(header, {opacity:0, y:40});
+  tl.to(header, {opacity:1, y:0, duration:0.4, ease:'power2.out'});
+
+  /* Spacer */
+  tl.to({},{duration:0.15});
+
+  /* Steps appear one by one */
+  steps.forEach(function(step, i){
+    var marker = markers[i];
+
+    /* Step slides up & fades in */
+    tl.to(step, {
+      opacity:1,
+      y:0,
+      duration:0.35,
+      ease:'power3.out',
+    });
+
+    /* Marker activates */
+    tl.to(marker, {
+      onStart:function(){ marker.classList.add('active'); },
+      duration:0.01,
+    }, '<+=0.1');
+
+    /* Line fills to this step */
+    var lineProgress = ((i + 1) / steps.length) * 100;
+    tl.to(lineFill, {
+      [isMobile ? 'height' : 'width']: lineProgress + '%',
+      duration:0.3,
+      ease:'power2.inOut',
+    }, '<');
+
+    /* Hold for readability */
+    if(i < steps.length - 1){
+      tl.to({},{duration:0.25});
+    }
+  });
+
+  /* Final hold before unpin */
+  tl.to({},{duration:0.35});
+
+  /* Resize handler */
+  var resizeTimer;
+  window.addEventListener('resize', function(){
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function(){
+      ScrollTrigger.refresh();
+    }, 250);
+  });
+
+})();
+</script>
+<script>document.addEventListener("mousemove",e=>{const h=document.querySelector('.hero-device');if(!h)return;const x=(e.clientX/window.innerWidth-.5)*8,y=(e.clientY/window.innerHeight-.5)*-8;h.style.transform=`perspective(1200px) rotateY(${x}deg) rotateX(${y}deg)`});</script></body>
+</html>
