@@ -1546,13 +1546,17 @@ document.querySelectorAll('.reason').forEach(function(r){ reasonObserver.observe
       ctx.font = '300 26px Montserrat, sans-serif';
       
 
-      ctx.fillStyle = '#FFFFFF';
-      ctx.font = '400 44px Montserrat, sans-serif';
-      wrapText(ctx, 'Toda multa carrega uma chance de defesa.', c.width/2, 380, 420, 54);
+     ctx.fillStyle = '#FFFFFF';
+ctx.font = '400 44px Montserrat, sans-serif';
+wrapText(ctx, 'Sua defesa cabe em minutos.', c.width/2, 380, 420, 54);
 
-      ctx.fillStyle = 'rgba(255,255,255,.7)';
-      ctx.font = '300 26px Inter, sans-serif';
-      wrapText(ctx, 'Podemos te ajudar em minutos, não em dias.', c.width/2, 620, 400, 36);
+ctx.fillStyle = '#7C3AED';
+ctx.font = '700 34px Montserrat, sans-serif';
+wrapText(ctx, 'E CABE NA PALMA DA SUA MÃO.', c.width/2, 460, 420, 44);
+
+ctx.fillStyle = 'rgba(255,255,255,.7)';
+ctx.font = '300 26px Inter, sans-serif';
+wrapText(ctx, 'Sem sair de casa, sem complicação.', c.width/2, 620, 400, 36);
 
       ctx.strokeStyle = '#7C3AED';
       ctx.lineWidth = 4;
